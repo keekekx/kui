@@ -1,0 +1,17 @@
+{
+  "name": "com.keekekx.uiautobinder",
+  "displayName": "KX - UIAutoBinder",
+  "description": "UGUI界面自动生成定义代码，以及在预制体上绑定对应对象的组件",
+  "keywords": [
+    "UGUI",
+    "TextMeshPro",
+    "Image",
+    "Text",
+    "Button"
+  ],
+  "version": "0.0.1",
+  "unity": "2018.1",
+  "license": "MIT",
+  "dependencies": {
+  }
+}

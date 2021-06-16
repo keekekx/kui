@@ -1,0 +1,15 @@
+{
+    "name": "com.keekekx.uiautobinder.editor",
+    "references": [
+        "com.keekekx.uiautobinder.runtime",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
