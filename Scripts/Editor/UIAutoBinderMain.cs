@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ using UnityEngine.UI;
 
 public static class UIAutoBinderMain
 {
-    private struct GenInfo
+    internal struct GenInfo
     {
         public Type Type;
         public string Name;
@@ -59,8 +60,8 @@ public static class UIAutoBinderMain
     }
 
     private static string UIPrefabPath => _config.UIPrefabPath;
-    private static string CodeGenPath => _config.CodeGenPath;
-    private const string CodeTemplate = @"using System.Collections;
+    internal static string CodeGenPath => _config.CodeGenPath;
+    internal const string CodeTemplate = @"using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -71,12 +72,12 @@ public partial class %CLASSNAME% : MonoBehaviour
 }
 ";
 
-    private static string GenDefine(Type t, string name)
+    internal static string GenDefine(Type t, string name)
     {
         return $"   public {t.Name} {name};";
     }
 
-    private static void DeepCheckInfo(Transform root, Dictionary<string, GenInfo> info)
+    internal static void DeepCheckInfo(Transform root, Dictionary<string, GenInfo> info)
     {
         for (var i = 0; i < root.childCount; i++)
         {
@@ -107,7 +108,7 @@ public partial class %CLASSNAME% : MonoBehaviour
         }
     }
 
-    private static MonoBehaviour GetGenClass(MonoBehaviour[] gs)
+    internal static MonoBehaviour GetGenClass(MonoBehaviour[] gs)
     {
         foreach (var m in gs)
         {
@@ -120,7 +121,7 @@ public partial class %CLASSNAME% : MonoBehaviour
 
         return null;
     }
-
+    
     [MenuItem("UIAutoBinder/Gen Code And Bind")]
     private static void ChangeTestValue()
     {
@@ -187,3 +188,57 @@ public partial class %CLASSNAME% : MonoBehaviour
         AssetDatabase.Refresh();
     }
 }
+public class FileModificationWarning : SaveAssetsProcessor
+{
+    static string[] OnWillSaveAssets(string[] paths)
+    {
+        EditorApplication.delayCall += () =>
+        {
+            Debug.Log("OnWillSaveAssets");
+            var dic = new Dictionary<string, UIAutoBinderMain.GenInfo>();
+            var sb = new StringBuilder();
+            foreach (var path in paths)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                var gs = go.GetComponents<MonoBehaviour>();
+                var gt = UIAutoBinderMain.GetGenClass(gs)?.GetType();
+                if (gt == null)
+                {
+                    continue;
+                }
+
+                dic.Clear();
+                sb.Clear();
+                UIAutoBinderMain.DeepCheckInfo(go.transform, dic);
+                foreach (var info in dic.Values)
+                {
+                    sb.AppendLine(UIAutoBinderMain.GenDefine(info.Type, info.Name));
+                }
+
+                var code = UIAutoBinderMain.CodeTemplate.Replace("%INSERT%", sb.ToString());
+                code = code.Replace("%CLASSNAME%", gt.Name);
+                if (!Directory.Exists(UIAutoBinderMain.CodeGenPath))
+                {
+                    Directory.CreateDirectory(UIAutoBinderMain.CodeGenPath);
+                }
+
+                var outPath = $"{UIAutoBinderMain.CodeGenPath}/{gt.Name}Define.cs";
+                if (File.ReadAllText(outPath) == code)
+                {
+                    continue;
+                }
+
+                var txt = File.CreateText(outPath);
+                txt.Write(code);
+                txt.Close();
+                AssetDatabase.ImportAsset(outPath);
+                Debug.Log(path);
+            }
+
+            AssetDatabase.Refresh();
+        };
+        return paths;
+    }
+}
+
+#endif
