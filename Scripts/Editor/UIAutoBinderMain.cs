@@ -121,8 +121,55 @@ public partial class %CLASSNAME% : MonoBehaviour
 
         return null;
     }
+
+    internal static void BindUI(string path)
+    {
+        try
+        {
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var gs = go.GetComponents<MonoBehaviour>();
+            var gt = GetGenClass(gs)?.GetType();
+            if (gt == null)
+            {
+                return;
+            }
+            EditorUtility.DisplayProgressBar("UIBinder", "UI代码生成检查...", 0f);
+            var dic = new Dictionary<string, GenInfo>();
+            var sb = new StringBuilder();
+            DeepCheckInfo(go.transform, dic);
+            foreach (var info in dic.Values)
+            {
+                sb.AppendLine(GenDefine(info.Type, info.Name));
+            }
+
+            var code = CodeTemplate.Replace("%INSERT%", sb.ToString());
+            code = code.Replace("%CLASSNAME%", gt.Name);
+            if (!Directory.Exists(CodeGenPath))
+            {
+                Directory.CreateDirectory(CodeGenPath);
+            }
+
+            var outPath = $"{CodeGenPath}/{gt.Name}Define.cs";
+            if (File.ReadAllText(outPath) == code)
+            {
+                EditorUtility.ClearProgressBar();
+                return;
+            }
+
+            var txt = File.CreateText(outPath);
+            txt.Write(code);
+            txt.Close();
+            EditorUtility.DisplayProgressBar("UIBinder", "UI代码生成检查...", 1f);
+            AssetDatabase.ImportAsset(outPath);
+            Debug.Log($"界面代码生成{path}");
+        }
+        catch (Exception e)
+        {
+            EditorUtility.DisplayDialog("UIBinder", $"{path}:{e.Message}", "Ok");
+        }
+        EditorUtility.ClearProgressBar();
+    }
     
-    [MenuItem("UIAutoBinder/Gen Code And Bind")]
     private static void ChangeTestValue()
     {
         var paths = Directory.GetFiles(Application.dataPath + UIPrefabPath, "*.prefab", SearchOption.AllDirectories);
@@ -162,77 +209,52 @@ public partial class %CLASSNAME% : MonoBehaviour
     [DidReloadScripts]
     private static void Bind()
     {
+        EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", 0f);
         var paths = Directory.GetFiles(Application.dataPath + UIPrefabPath, "*.prefab", SearchOption.AllDirectories);
         var dic = new Dictionary<string, GenInfo>();
-        foreach (var path in paths)
+        for (var i = 0; i < paths.Length; i++)
         {
-            var go = AssetDatabase.LoadAssetAtPath<GameObject>(path.Replace(Application.dataPath, "Assets"));
-            var gs = go.GetComponents<MonoBehaviour>();
-            var t = GetGenClass(gs);
-            if (t == null)
+            var path = paths[i];
+            try
             {
-                continue;
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path.Replace(Application.dataPath, "Assets"));
+                var gs = go.GetComponents<MonoBehaviour>();
+                var t = GetGenClass(gs);
+                if (t == null)
+                {
+                    continue;
+                }
+                dic.Clear();
+                DeepCheckInfo(go.transform, dic);
+                foreach (var info in dic.Values)
+                {
+                    var tp = t.GetType();
+                    var f = tp.GetField(info.Name, BindingFlags.Public | BindingFlags.Instance);
+                    f?.SetValue(t, info.Object);
+                }
+                EditorUtility.SetDirty(go);
+                EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", (float)i/paths.Length);
             }
-            dic.Clear();
-            DeepCheckInfo(go.transform, dic);
-            foreach (var info in dic.Values)
+            catch (Exception e)
             {
-                var tp = t.GetType();
-                var f = tp.GetField(info.Name, BindingFlags.Public | BindingFlags.Instance);
-                f?.SetValue(t, info.Object);
+                EditorUtility.DisplayDialog("UIBinder", $"{path}:{e.Message}", "Ok");
             }
-            EditorUtility.SetDirty(go);
         }
-
+        
+        EditorUtility.ClearProgressBar();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
 }
-public class FileModificationWarning : SaveAssetsProcessor
+public class FileModificationWarning : UnityEditor.AssetModificationProcessor
 {
     static string[] OnWillSaveAssets(string[] paths)
     {
         EditorApplication.delayCall += () =>
         {
-            Debug.Log("OnWillSaveAssets");
-            var dic = new Dictionary<string, UIAutoBinderMain.GenInfo>();
-            var sb = new StringBuilder();
             foreach (var path in paths)
             {
-                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                var gs = go.GetComponents<MonoBehaviour>();
-                var gt = UIAutoBinderMain.GetGenClass(gs)?.GetType();
-                if (gt == null)
-                {
-                    continue;
-                }
-
-                dic.Clear();
-                sb.Clear();
-                UIAutoBinderMain.DeepCheckInfo(go.transform, dic);
-                foreach (var info in dic.Values)
-                {
-                    sb.AppendLine(UIAutoBinderMain.GenDefine(info.Type, info.Name));
-                }
-
-                var code = UIAutoBinderMain.CodeTemplate.Replace("%INSERT%", sb.ToString());
-                code = code.Replace("%CLASSNAME%", gt.Name);
-                if (!Directory.Exists(UIAutoBinderMain.CodeGenPath))
-                {
-                    Directory.CreateDirectory(UIAutoBinderMain.CodeGenPath);
-                }
-
-                var outPath = $"{UIAutoBinderMain.CodeGenPath}/{gt.Name}Define.cs";
-                if (File.ReadAllText(outPath) == code)
-                {
-                    continue;
-                }
-
-                var txt = File.CreateText(outPath);
-                txt.Write(code);
-                txt.Close();
-                AssetDatabase.ImportAsset(outPath);
-                Debug.Log(path);
+                UIAutoBinderMain.BindUI(path);
             }
 
             AssetDatabase.Refresh();
