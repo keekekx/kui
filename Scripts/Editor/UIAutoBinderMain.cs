@@ -182,11 +182,8 @@ public partial class %CLASSNAME%
         EditorUtility.ClearProgressBar();
     }
 
-    [MenuItem("GameObject/UIHelper/BindUIElements", false, 10)]
-    private static void BindUIElements()
+    private static void BindUIElements(GameObject go)
     {
-        EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", 0f);
-        var go = Selection.activeGameObject;
         if (go == null)
         {
             EditorUtility.ClearProgressBar();
@@ -212,6 +209,14 @@ public partial class %CLASSNAME%
         EditorUtility.ClearProgressBar();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+    }
+
+    [MenuItem("GameObject/UIHelper/BindUIElements", false, 10)]
+    private static void BindUIElements()
+    {
+        EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", 0f);
+        var go = Selection.activeGameObject;
+        BindUIElements(go);
     }
     
 

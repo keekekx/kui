@@ -20,6 +20,7 @@ public class UIManager : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private RectTransform GetLayer(int layer)
