@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class UIAutoBinderConfig : ScriptableObject
 {
-    public string UIPrefabPath = "/UI";
+    public string UIPrefabPath = "Assets/UI";
     public string CodeGenPath = "Assets/Scripts/UIGen";
 }

@@ -66,7 +66,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public partial class %CLASSNAME% : MonoBehaviour
+public partial class %CLASSNAME%
 {
 %INSERT%
 }
@@ -112,8 +112,8 @@ public partial class %CLASSNAME% : MonoBehaviour
     {
         foreach (var m in gs)
         {
-            var a = m.GetType().GetCustomAttribute(typeof(GenUIBindCode));
-            if (a != null)
+            var a = m.GetType().IsSubclassOf(typeof(UIBase));
+            if (a)
             {
                 return m;
             }
@@ -124,6 +124,10 @@ public partial class %CLASSNAME% : MonoBehaviour
 
     internal static void BindUI(string path)
     {
+        if (path.EndsWith(".meta"))
+        {
+            return;
+        }
         try
         {
             var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
@@ -150,7 +154,7 @@ public partial class %CLASSNAME% : MonoBehaviour
             }
 
             var outPath = $"{CodeGenPath}/{gt.Name}Define.cs";
-            if (File.ReadAllText(outPath) == code)
+            if (Directory.Exists(outPath) && File.ReadAllText(outPath) == code)
             {
                 EditorUtility.ClearProgressBar();
                 return;
@@ -169,48 +173,52 @@ public partial class %CLASSNAME% : MonoBehaviour
         }
         EditorUtility.ClearProgressBar();
     }
-    
-    private static void ChangeTestValue()
-    {
-        var paths = Directory.GetFiles(Application.dataPath + UIPrefabPath, "*.prefab", SearchOption.AllDirectories);
-        var dic = new Dictionary<string, GenInfo>();
-        var sb = new StringBuilder();
-        foreach (var path in paths)
-        {
-            var go = AssetDatabase.LoadAssetAtPath<GameObject>(path.Replace(Application.dataPath, "Assets"));
-            var gs = go.GetComponents<MonoBehaviour>();
-            var gt = GetGenClass(gs)?.GetType();
-            if (gt == null)
-            {
-                continue;
-            }
-            dic.Clear();
-            sb.Clear();
-            DeepCheckInfo(go.transform, dic);
-            foreach (var info in dic.Values)
-            {
-                sb.AppendLine(GenDefine(info.Type, info.Name));
-            }
-                
-            var code = CodeTemplate.Replace("%INSERT%", sb.ToString());
-            code = code.Replace("%CLASSNAME%", gt.Name);
-            if (!Directory.Exists(CodeGenPath))
-            {
-                Directory.CreateDirectory(CodeGenPath);
-            }
-            var txt = File.CreateText($"{CodeGenPath}/{gt.Name}Define.cs");
-            txt.Write(code);
-            txt.Close();
-        }
 
+    [MenuItem("GameObject/UIHelper/BindUIElements", false, 10)]
+    private static void BindUIElements()
+    {
+        EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", 0f);
+        var go = Selection.activeGameObject;
+        if (go == null)
+        {
+            EditorUtility.ClearProgressBar();
+            return;
+        }
+        
+        var gs = go.GetComponents<MonoBehaviour>();
+        var t = GetGenClass(gs);
+        if (t == null)
+        {
+            EditorUtility.ClearProgressBar();
+            return;
+        }
+        var dic = new Dictionary<string, GenInfo>();
+        DeepCheckInfo(go.transform, dic);
+        foreach (var info in dic.Values)
+        {
+            var tp = t.GetType();
+            var f = tp.GetField(info.Name, BindingFlags.Public | BindingFlags.Instance);
+            f?.SetValue(t, info.Object);
+        }
+        EditorUtility.SetDirty(go);
+        EditorUtility.ClearProgressBar();
+        AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
+    
 
     [DidReloadScripts]
     private static void Bind()
     {
         EditorUtility.DisplayProgressBar("UIBinder", "UI代码自动绑定...", 0f);
-        var paths = Directory.GetFiles(Application.dataPath + UIPrefabPath, "*.prefab", SearchOption.AllDirectories);
+        if (!Directory.Exists(UIPrefabPath))
+        {
+            Debug.LogWarning($"自动绑定失效，请指定有效的UI预制体路径。");
+            EditorUtility.ClearProgressBar();
+            return;
+        }
+        
+        var paths = Directory.GetFiles(UIPrefabPath, "*.prefab", SearchOption.AllDirectories);
         var dic = new Dictionary<string, GenInfo>();
         for (var i = 0; i < paths.Length; i++)
         {
