@@ -1,3 +1,15 @@
-﻿{
-	"name": "com.keekekx.uiautobinder.runtime"
+{
+    "name": "com.keekekx.uiautobinder.runtime",
+    "references": [
+        "Unity.ResourceManager",
+        "Unity.Addressables"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }
