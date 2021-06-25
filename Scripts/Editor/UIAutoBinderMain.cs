@@ -124,7 +124,7 @@ public partial class %CLASSNAME%
 
     internal static void BindUI(string path)
     {
-        if (path.EndsWith(".meta"))
+        if (!path.EndsWith(".prefab"))
         {
             return;
         }
@@ -154,10 +154,18 @@ public partial class %CLASSNAME%
             }
 
             var outPath = $"{CodeGenPath}/{gt.Name}Define.cs";
-            if (Directory.Exists(outPath) && File.ReadAllText(outPath) == code)
+            try
             {
-                EditorUtility.ClearProgressBar();
-                return;
+                if (File.ReadAllText(outPath) == code)
+                {
+                    Debug.Log($"{outPath}文件没有改变，不用生成。");
+                    EditorUtility.ClearProgressBar();
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                Debug.Log($"{outPath}文件有改变，需要生成。");
             }
 
             var txt = File.CreateText(outPath);
