@@ -93,7 +93,14 @@ public class UIManager : MonoBehaviour
         {
             if (ups.Key.State == State.Showing)
             {
-                ups.Value.OnUpdate(delta);
+                try
+                {
+                    ups.Value.OnUpdate(delta);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                }
             }
         }
     }
