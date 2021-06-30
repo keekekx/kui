@@ -1,0 +1,4 @@
+﻿public interface IUIUpdate
+{
+    public void OnUpdate(float delta);
+}
