@@ -60,6 +60,13 @@ public class UIBase : MonoBehaviour
         UIManager.Instance.Close(Context.Prefab);
     }
 
+    public virtual void Back()
+    {
+        PreClose();
+        OnClose();
+        UIManager.Instance.Back(Context.Prefab);
+    }
+
     /// <summary>
     /// 窗口关闭前调用
     /// </summary>

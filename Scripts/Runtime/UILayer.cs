@@ -139,21 +139,23 @@ public class UILayer : MonoBehaviour
         return !_operators.Contains(ctx);
     }
 
-    public UIContext Back()
+    public bool Back(UIContext ctx)
     {
         if (_operators.Count == 0)
         {
             throw new Exception("没有界面可以关闭");
         }
 
-        UIContext ctx;
         switch (m_ShowMode)
         {
             case ShowMode.None:
                 throw new Exception("普通模式不支持返回操作");
             case ShowMode.Stack:
             {
-                ctx = _operators[_operators.Count - 1];
+                if (_operators[_operators.Count - 1] != ctx)
+                {
+                    throw new Exception("最后一个打开的窗口不是该窗口");
+                }
                 ctx.UI.Hide();
                 _operators.RemoveAt(_operators.Count - 1);
                 if (_operators.Count > 0)
@@ -165,7 +167,11 @@ public class UILayer : MonoBehaviour
             }
             case ShowMode.Queue:
             {
-                ctx = _operators[_operators.Count - 1];
+                if (_operators[0] != ctx)
+                {
+                    throw new Exception("第一个打开的窗口不是该窗口");
+                }
+
                 ctx.UI.Hide();
                 _operators.RemoveAt(0);
                 if (_operators.Count > 0)
@@ -179,6 +185,6 @@ public class UILayer : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
-        return !_operators.Contains(ctx) ? ctx : null;
+        return !_operators.Contains(ctx);
     }
 }

@@ -86,6 +86,17 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void Back(string key)
+    {
+        if (!_uiDic.TryGetValue(key, out var ctx)) return;
+        if (ctx.Layer.Back(ctx))
+        {
+            _uiUpdatesDic.Remove(ctx);
+            Addressables.ReleaseInstance(ctx.UI.gameObject);
+            _uiDic.Remove(key);
+        }
+    }
+
     private void Update()
     {
         var delta = Time.deltaTime;
