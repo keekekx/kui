@@ -49,11 +49,11 @@ public class UIManager : MonoBehaviour
         }
 
         var layer = GetLayer(cfg.Layer);
-        if (!_uiDic.TryGetValue(cfg.Prefab, out var ctx))
+        if (!_uiDic.TryGetValue(cfg.Address, out var ctx))
         {
             ctx = new UIContext
             {
-                Prefab = cfg.Prefab,
+                Prefab = cfg.Address,
                 Layer = layer,
                 Params = data,
                 State = State.Init,
@@ -66,34 +66,34 @@ public class UIManager : MonoBehaviour
         {
             _uiUpdatesDic.Add(ctx, updater);
         }
-        _uiDic[cfg.Prefab] = ctx;
+        _uiDic[cfg.Address] = ctx;
         return ctx.UI as T;
     }
 
-    public T GetUI<T>(string key) where T : UIBase
+    public T GetUI<T>(string addr) where T : UIBase
     {
-        return _uiDic.TryGetValue(key, out var ctx) ? ctx.UI as T: default;
+        return _uiDic.TryGetValue(addr, out var ctx) ? ctx.UI as T: default;
     }
 
-    public void Close(string key)
+    public void Close(string addr)
     {
-        if (!_uiDic.TryGetValue(key, out var ctx)) return;
+        if (!_uiDic.TryGetValue(addr, out var ctx)) return;
         if (ctx.Layer.OperatorClose(ctx))
         {
             _uiUpdatesDic.Remove(ctx);
             Addressables.ReleaseInstance(ctx.UI.gameObject);
-            _uiDic.Remove(key);
+            _uiDic.Remove(addr);
         }
     }
 
-    public void Back(string key)
+    public void Back(string addr)
     {
-        if (!_uiDic.TryGetValue(key, out var ctx)) return;
+        if (!_uiDic.TryGetValue(addr, out var ctx)) return;
         if (ctx.Layer.Back(ctx))
         {
             _uiUpdatesDic.Remove(ctx);
             Addressables.ReleaseInstance(ctx.UI.gameObject);
-            _uiDic.Remove(key);
+            _uiDic.Remove(addr);
         }
     }
 

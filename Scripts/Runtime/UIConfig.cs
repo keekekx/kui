@@ -2,6 +2,6 @@
 
 public class UIConfig : Attribute
 {
-    public string Prefab { get; set; }
+    public string Address { get; set; }
     public int Layer { get; set; }
 }
