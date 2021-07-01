@@ -4,6 +4,7 @@
     Init,
     Showing,
     Hiding,
+    Animation,
     Destroy,
 }
 

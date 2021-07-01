@@ -1,10 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class UIBase : MonoBehaviour
 {
     public UIContext Context;
+
+    /// <summary>
+    /// 是否可点击
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CanClick()
+    {
+        return Context.State == State.Showing;
+    }
+
+    /// <summary>
+    /// 添加按钮点击响应
+    /// </summary>
+    /// <param name="btn"></param>
+    /// <param name="call"></param>
+    public void ButtonAddListener(Button btn, UnityAction call)
+    {
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(() =>
+        {
+            if (!CanClick())
+            {
+                return;
+            }
+            call.Invoke();
+        });
+    }
+    
     /// <summary>
     /// UIManager Open时，第一次创建会调用该接口
     /// </summary>
