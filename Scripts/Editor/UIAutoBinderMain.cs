@@ -46,14 +46,14 @@ public static class UIAutoBinderMain
             {
                 return cfgIns;
             }
-            cfgIns = AssetDatabase.LoadAssetAtPath<UIAutoBinderConfig>("Assets/UIAutoBinder/config.asset");
+            cfgIns = AssetDatabase.LoadAssetAtPath<UIAutoBinderConfig>("Assets/UIAutoBinder/Config.asset");
             if (cfgIns != null) return cfgIns;
             cfgIns = ScriptableObject.CreateInstance<UIAutoBinderConfig>();
             if (!AssetDatabase.IsValidFolder("Assets/UIAutoBinder/"))
             {
                 AssetDatabase.CreateFolder("Assets","UIAutoBinder");
             }
-            AssetDatabase.CreateAsset(cfgIns, "Assets/UIAutoBinder/config.asset");
+            AssetDatabase.CreateAsset(cfgIns, "Assets/UIAutoBinder/Config.asset");
 
             return cfgIns;
         }
