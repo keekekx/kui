@@ -36,7 +36,7 @@ public static class UIAutoBinderMain
         typeof(TextMeshProUGUI),
     };
 
-
+    
     private static UIAutoBinderConfig cfgIns;
     private static UIAutoBinderConfig _config
     {
@@ -74,7 +74,7 @@ public partial class %CLASSNAME%
 
     internal static string GenDefine(Type t, string name)
     {
-        return $"   public {t.Name} {name};";
+        return $"   [HideInInspector]\r\n   public {t.Name} {name};";
     }
 
     internal static void DeepCheckInfo(Transform root, Dictionary<string, GenInfo> info)
@@ -158,7 +158,6 @@ public partial class %CLASSNAME%
             {
                 if (File.ReadAllText(outPath) == code)
                 {
-                    Debug.Log($"{outPath}文件没有改变，不用生成。");
                     EditorUtility.ClearProgressBar();
                     return;
                 }
@@ -177,7 +176,8 @@ public partial class %CLASSNAME%
         }
         catch (Exception e)
         {
-            EditorUtility.DisplayDialog("UIBinder", $"{path}:{e.Message}", "Ok");
+            Debug.LogWarning($"{path}:{e.Message}");
+            //EditorUtility.DisplayDialog("UIBinder", $"{path}:{e.Message}", "Ok");
         }
         EditorUtility.ClearProgressBar();
     }
