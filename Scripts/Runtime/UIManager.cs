@@ -7,7 +7,15 @@ using UnityEngine.AddressableAssets;
 
 public class UIManager : MonoBehaviour
 {
+    [Serializable]
+    public class LayerConfig
+    {
+        public int Layer;
+        public UILayer.ShowMode ShowMode;
+    }
     public GameObject LayerTemplate;
+    public List<LayerConfig> LayerConfigs = new List<LayerConfig>();
+    
     public static UIManager Instance;
 
     private Dictionary<string, UIContext> _uiDic = new Dictionary<string, UIContext>();
@@ -34,6 +42,11 @@ public class UIManager : MonoBehaviour
             layerGO.name = $"layer_{layer}";
             layerGO.transform.SetParent(transform);
             l = layerGO.GetComponent<UILayer>();
+            var cfg = LayerConfigs?.Find(c => c.Layer == layer);
+            if (cfg != null)
+            {
+                l.m_ShowMode = cfg.ShowMode;
+            }
             _layerRootDic.Add(layer, l);
         }
 
@@ -114,5 +127,10 @@ public class UIManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void Dispatch(object key, params object[] param)
+    {
+        
     }
 }
