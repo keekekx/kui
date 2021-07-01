@@ -58,7 +58,7 @@ public static class UIAutoBinderMain
             return cfgIns;
         }
     }
-
+    
     private static string UIPrefabPath => _config.UIPrefabPath;
     internal static string CodeGenPath => _config.CodeGenPath;
     internal const string CodeTemplate = @"using System.Collections;
@@ -258,7 +258,7 @@ public partial class %CLASSNAME%
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("UIBinder", $"{path}:{e.Message}", "Ok");
+                Debug.LogWarning($"{path}:{e.Message}");
             }
         }
         
