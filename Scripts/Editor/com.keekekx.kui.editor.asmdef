@@ -1,0 +1,17 @@
+{
+    "name": "com.keekekx.kui.editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.TextMeshPro",
+        "com.keekekx.kui.runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
