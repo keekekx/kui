@@ -1,4 +1,7 @@
-﻿public interface IUIUpdate
+﻿namespace KUI
 {
-    public void OnUpdate(float delta);
+    public interface IUIUpdate
+    {
+        public void OnUpdate(float delta);
+    }
 }

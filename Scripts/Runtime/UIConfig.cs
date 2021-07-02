@@ -1,7 +1,10 @@
 ﻿using System;
 
-public class UIConfig : Attribute
+namespace KUI
 {
-    public string Address { get; set; }
-    public int Layer { get; set; }
+    public class UIConfig : Attribute
+    {
+        public string Address { get; set; }
+        public int Layer { get; set; }
+    }
 }
